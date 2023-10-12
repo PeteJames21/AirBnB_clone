@@ -3,6 +3,41 @@
 Contains the entry point of the command interpreter.
 """
 import cmd
+from models import storage
+from models.base_model import BaseModel
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
+
+
+valid_classes = {
+                    'Amenity', 'BaseModel', 'City', 'Place',
+                    'Review', 'State', 'User'
+                }
+
+
+def class_name_is_valid(class_name):
+    """Return True if class_name is valid, else False."""
+    if not class_name:
+        print("** class name missing **")
+        return False
+    elif class_name not in valid_classes:
+        print("** class doesn't exist **")
+        return False
+    return True
+
+
+def id_exists(obj_id):
+    """Return True if the object id exists, else False"""
+    try:
+        storage.all()[obj_id]
+        return True
+    except KeyError:
+        print("** no instance found **")
+        return False
 
 
 class HBNBCommand(cmd.Cmd):
@@ -18,13 +53,56 @@ class HBNBCommand(cmd.Cmd):
         return True
 
     def do_create(self, arg):
-        raise NotImplementedError
+        """Create and save an instance of the class in arg and print its id."""
+        if not class_name_is_valid(arg):
+            return
+
+        # Create an instance of the class and save it
+        obj = eval(arg)()
+        obj.save()
+        print(obj.id)
 
     def do_show(self, arg):
-        raise NotImplementedError
+        """Print an instance based on its class name and ID."""
+        args = [""] * 2
+        i = 0
+        for arg_ in arg.split():
+            args[i] = arg_
+            i += 1
+
+        if not class_name_is_valid(args[0]):
+            return
+        if not args[1]:
+            print("** instance id missing **")
+            return
+
+        id_ = ".".join(args)
+        if not id_exists(id_):
+            return
+        obj = storage.all()[id_]
+        print(obj)
 
     def do_destroy(self, arg):
-        raise NotImplementedError
+        """Destroy an instance based on its class name and ID."""
+        args = [""] * 2
+        i = 0
+        for arg_ in arg.split():
+            args[i] = arg_
+            i += 1
+
+        if not class_name_is_valid(args[0]):
+            return
+        if not args[1]:
+            print("** instance id missing **")
+            return
+
+        id_ = ".".join(args)
+        if not id_exists(id_):
+            return
+
+        # Destroy the instance
+        del storage.all()[id_]
+        storage.save()
 
     def do_all(self, arg):
         raise NotImplementedError
@@ -34,6 +112,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_EOF(self, arg):
         '''Ctrl+Z to quits the program'''
+        print()
         return True
 
 
