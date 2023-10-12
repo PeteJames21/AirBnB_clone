@@ -2,7 +2,7 @@
 """
 Defines a class that models an AirBnB review.
 """
-from base_model import BaseModel
+from .base_model import BaseModel
 
 
 class Review(BaseModel):
