@@ -2,6 +2,7 @@
 """
 Contains the entry point of the command interpreter.
 """
+import cmd
 
 
 class HBNBCommand(cmd.Cmd):
@@ -9,13 +10,12 @@ class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb)"
 
     def emptyline(self):
-        raise NotImplementedError
+        '''Empty line + enter does nothing'''
+        pass
 
     def do_quit(self, arg):
-        raise NotImplementedError
-
-    def do_help(self, arg):
-        raise NotImplementedError
+        '''Quit exits the program'''
+        return True
 
     def do_create(self, arg):
         raise NotImplementedError
@@ -31,6 +31,10 @@ class HBNBCommand(cmd.Cmd):
 
     def do_update(self, arg):
         raise NotImplementedError
+
+    def do_EOF(self, arg):
+        '''Ctrl+Z to quits the program'''
+        return True
 
 
 if __name__ == '__main__':

@@ -9,10 +9,12 @@ class BaseModel:
     '''Defines all common attributes/methods for other classes'''
     def __init__(self, *args, **kwargs):
         '''
-        Assigns each instance with a unique id
-        
-        Assigns current time and updated time
-        re-creates an instance with the dictionary representation
+        This is the constructor of the base model
+
+        *args is unused;
+        if **kwargs is not empty, it re-creates an instance with
+        the dictionary representation
+        else, a new instance is created
         '''
         date_format = "%Y-%m-%dT%H:%M:%S.%f"
         self.id = str(uuid.uuid4())
@@ -37,9 +39,10 @@ class BaseModel:
 
     def to_dict(self):
         '''
-        creates and returns a dictionary representation with
-        “simple object type” of our BaseModel
-        a key __class__ contains the class name of the object
+        Returns a dictionary containing all keys/values of
+        __dict__ of the instance:
+
+        A key __class__ contains the class name of the object
         '''
         obj_dict = self.__dict__.copy()
         obj_dict['created_at'] = self.created_at.isoformat()
