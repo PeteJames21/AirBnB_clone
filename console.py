@@ -7,7 +7,7 @@ import cmd
 
 class HBNBCommand(cmd.Cmd):
     """The console command interpreter."""
-    prompt = "(hbnb)"
+    prompt = "(hbnb) "
 
     def emptyline(self):
         '''Empty line + enter does nothing'''
