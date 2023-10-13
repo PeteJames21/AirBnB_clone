@@ -145,7 +145,7 @@ class HBNBCommand(cmd.Cmd):
         else:
             instance = storage.all()[object_id]
             setattr(instance, tokens[2], tokens[3])
-            storage.save()
+            instance.save()
 
     def do_EOF(self, arg):
         '''Ctrl+Z to quit the program'''
