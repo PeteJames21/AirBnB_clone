@@ -11,6 +11,7 @@ from models.city import City
 from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
+import shlex
 
 
 valid_classes = {
@@ -112,19 +113,42 @@ class HBNBCommand(cmd.Cmd):
             if not class_name_is_valid(arg):
                 return
             class_name = arg
-            class_instances = storage.all().values()
-            instances = []
-            for instance in class_instances:
-                if instance.__class__.__name__ == class_name:
-                    instances.append(str(instance))
+            instances = [
+                        instance for instance in storage.all().values()
+                        if instance.__class__.__name__ == class_name]
         if instances:
-            print(instances)
+            print([str(instance) for instance in instances])
 
     def do_update(self, arg):
-        raise NotImplementedError
+        '''Updates an instance based on the class name and id'''
+        tokens = shlex.split(arg)
+
+        if len(tokens) == 0:
+            print("** class name missing **")
+            return
+        elif tokens[0] not in valid_classes:
+            print("** class doesn't exist **")
+            return
+        elif len(tokens) == 1:
+            print("** instance id missing **")
+            return
+
+        object_id = tokens[0] + "." + tokens[1]
+        if not id_exists(object_id):
+            return
+        if len(tokens) == 2:
+            print("** attribute name missing **")
+            return
+        elif len(tokens) == 3:
+            print("** value missing **")
+            return
+        else:
+            instance = storage.all()[object_id]
+            setattr(instance, tokens[2], tokens[3])
+            storage.save()
 
     def do_EOF(self, arg):
-        '''Ctrl+Z to quits the program'''
+        '''Ctrl+Z to quit the program'''
         print()
         return True
 
