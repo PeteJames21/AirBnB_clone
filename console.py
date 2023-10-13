@@ -11,6 +11,7 @@ from models.city import City
 from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
+import re
 import shlex
 
 
@@ -146,6 +147,52 @@ class HBNBCommand(cmd.Cmd):
             instance = storage.all()[object_id]
             setattr(instance, tokens[2], tokens[3])
             storage.save()
+
+    def do_count(self, arg):
+        '''Retrieves the number of instances of a class'''
+        if not class_name_is_valid(arg):
+            return
+        count = 0
+        all_objects = storage.all()
+        '''
+        <classname.id>:<memory location>
+        '''
+        for key, value in all_objects.items():
+            class_name = key.split('.')
+            if class_name[0] == arg:
+                count += 1
+        print(count)
+    
+    def default(self, arg):
+        class_name, all_commands = arg.split(".", 1)
+        command_list = all_commands.split("(")
+        command = command_list[0]
+        if command == 'count':
+            self.onecmd(f'count {class_name}')
+        
+        if command == 'all':
+            self.onecmd(f'all {class_name}')
+        
+        #get id
+        pattern = r'"([^"]*)"'
+        id_list = re.findall(pattern, arg)
+        id = id_list[0]
+
+        if command == 'show':
+            self.onecmd(f'show {class_name} {id}')
+        
+        if command == 'destroy':
+            self.onecmd(f'destroy {class_name} {id}')
+        
+        if command == 'update':
+            pattern = r'\((.*?)\)'
+            match = re.search(pattern, arg)
+            if match:
+                in_para = match.group(1).split(', ')
+                id = in_para[0]
+                att_name = in_para[1]
+                value_name = in_para[2]
+                self.onecmd(f'update {class_name} {id} {att_name} {value_name}')   
 
     def do_EOF(self, arg):
         '''Ctrl+Z to quit the program'''
