@@ -105,7 +105,20 @@ class HBNBCommand(cmd.Cmd):
         storage.save()
 
     def do_all(self, arg):
-        raise NotImplementedError
+        '''Prints the string representation of a given class'''
+        if not arg:
+            instances = storage.all().values()
+        else:
+            if not class_name_is_valid(arg):
+                return
+            class_name = arg
+            class_instances = storage.all().values()
+            instances = []
+            for instance in class_instances:
+                if instance.__class__.__name__ == class_name:
+                    instances.append(str(instance))
+        if instances:
+            print(instances)
 
     def do_update(self, arg):
         raise NotImplementedError
