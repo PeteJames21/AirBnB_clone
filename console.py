@@ -146,7 +146,7 @@ class HBNBCommand(cmd.Cmd):
         else:
             instance = storage.all()[object_id]
             setattr(instance, tokens[2], tokens[3])
-            storage.save()
+            instance.save()
 
     def do_count(self, arg):
         '''Retrieves the number of instances of a class'''
