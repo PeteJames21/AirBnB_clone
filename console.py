@@ -162,37 +162,48 @@ class HBNBCommand(cmd.Cmd):
             if class_name[0] == arg:
                 count += 1
         print(count)
-    
+
     def default(self, arg):
+        # TODO: Handle case where there are no args and command in invalid
+        if "." not in arg:
+            print(f"*** Unknown syntax: {arg}")
+            return
         class_name, all_commands = arg.split(".", 1)
         command_list = all_commands.split("(")
         command = command_list[0]
         if command == 'count':
             self.onecmd(f'count {class_name}')
-        
+            return
         if command == 'all':
             self.onecmd(f'all {class_name}')
-        
-        #get id
+            return
+        if command == 'create':
+            self.onecmd(f'create {class_name}')
+            return
+
+        # get id
         pattern = r'"([^"]*)"'
         id_list = re.findall(pattern, arg)
+
         id = id_list[0]
 
         if command == 'show':
             self.onecmd(f'show {class_name} {id}')
-        
-        if command == 'destroy':
+
+        elif command == 'destroy':
             self.onecmd(f'destroy {class_name} {id}')
-        
-        if command == 'update':
+
+        elif command == 'update':
             pattern = r'\((.*?)\)'
             match = re.search(pattern, arg)
             if match:
                 in_para = match.group(1).split(', ')
                 id = in_para[0]
                 att_name = in_para[1]
-                value_name = in_para[2]
-                self.onecmd(f'update {class_name} {id} {att_name} {value_name}')   
+                value = in_para[2]
+                self.onecmd(f'update {class_name} {id} {att_name} {value}')
+        else:
+            print(f"*** Unknown syntax: {arg}")
 
     def do_EOF(self, arg):
         '''Ctrl+Z to quit the program'''

@@ -7,4 +7,4 @@ from .base_model import BaseModel
 
 class Amenity(BaseModel):
     """Models an amenity."""
-    name = "" 
+    name = ""
