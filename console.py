@@ -208,7 +208,7 @@ class HBNBCommand(cmd.Cmd):
                 return
 
             try:
-                d = json.loads(arg_dict)
+                d = json.loads(arg_dict.replace("'", "\""))
                 for key, value in d.items():
                     self.onecmd(f"update {class_name} {args} {key} {value}")
 
