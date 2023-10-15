@@ -13,6 +13,7 @@ from models.place import Place
 from models.review import Review
 import re
 import shlex
+import json
 
 
 valid_classes = {
@@ -47,7 +48,7 @@ class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb) "
 
     def emptyline(self):
-        '''Empty line + enter does nothing'''
+        """Empty line + enter does nothing."""
         pass
 
     def do_quit(self, arg):
@@ -71,6 +72,8 @@ class HBNBCommand(cmd.Cmd):
         for arg_ in arg.split():
             args[i] = arg_
             i += 1
+            if i >= 2:
+                break
 
         if not class_name_is_valid(args[0]):
             return
@@ -91,6 +94,8 @@ class HBNBCommand(cmd.Cmd):
         for arg_ in arg.split():
             args[i] = arg_
             i += 1
+            if i >= 2:
+                break
 
         if not class_name_is_valid(args[0]):
             return
@@ -107,7 +112,7 @@ class HBNBCommand(cmd.Cmd):
         storage.save()
 
     def do_all(self, arg):
-        '''Prints the string representation of a given class'''
+        """Print the string representation of all instances of a class."""
         if not arg:
             instances = storage.all().values()
         else:
@@ -121,7 +126,7 @@ class HBNBCommand(cmd.Cmd):
             print([str(instance) for instance in instances])
 
     def do_update(self, arg):
-        '''Updates an instance based on the class name and id'''
+        """Update an instance based on the class name and id."""
         tokens = shlex.split(arg)
 
         if len(tokens) == 0:
@@ -149,14 +154,12 @@ class HBNBCommand(cmd.Cmd):
             instance.save()
 
     def do_count(self, arg):
-        '''Retrieves the number of instances of a class'''
+        """Retrieve the number of instances of a class."""
         if not class_name_is_valid(arg):
             return
         count = 0
         all_objects = storage.all()
-        '''
-        <classname.id>:<memory location>
-        '''
+
         for key, value in all_objects.items():
             class_name = key.split('.')
             if class_name[0] == arg:
@@ -164,49 +167,59 @@ class HBNBCommand(cmd.Cmd):
         print(count)
 
     def default(self, arg):
-        # TODO: Handle case where there are no args and command in invalid
-        if "." not in arg:
+        """
+        Execute commands of the form className.cmdName(*args).
+
+        An error is printed if the syntax does not match the above or if the
+        syntax is correct but the command name does not exist.
+        """
+        cmd_table = {
+            "all": self.do_all, "count": self.do_count,
+            "create": self.do_create, "show": self.do_show,
+            "destroy": self.do_destroy, "update": self.do_update
+        }
+
+        # Extract the class name, command name, and arguments
+        pattern = (r"\A(?P<className>\w+?)\.(?P<cmd>\w+?)\((?P<args>.*?)"
+                   r"(?P<dict>\{.*?\})?\)\Z")
+        parser = re.compile(pattern)
+        result = parser.match(arg)
+        if not result:
             print(f"*** Unknown syntax: {arg}")
             return
-        class_name, all_commands = arg.split(".", 1)
-        command_list = all_commands.split("(")
-        command = command_list[0]
-        if command == 'count':
-            self.onecmd(f'count {class_name}')
-            return
-        if command == 'all':
-            self.onecmd(f'all {class_name}')
-            return
-        if command == 'create':
-            self.onecmd(f'create {class_name}')
+        class_name, cmd_name, args, arg_dict = result.groups()
+        if cmd_name not in cmd_table.keys():
+            print(f"*** Unknown syntax: {cmd_name}")
             return
 
-        # get id
-        pattern = r'"([^"]*)"'
-        id_list = re.findall(pattern, arg)
+        # Strip quotes from args, e.g. 'a, "b", c' -> 'a b c'
+        arg_pattern = re.compile('[^,"\']+')
+        args = arg_pattern.findall(args)
+        args = " ".join([arg.strip() for arg in args if not arg.isspace()])
+        n_args = len(args.split())
 
-        id = id_list[0]
+        # Allow 'update' to be called with the syntax:
+        # 'clsName.update(id, {key: value...})'
+        if arg_dict and cmd_name == "update":
+            if n_args > 1:
+                print("*** Error in <update>: too many arguments")
+                return
+            if not id_exists(f"{class_name}.{args}"):
+                return
 
-        if command == 'show':
-            self.onecmd(f'show {class_name} {id}')
+            try:
+                d = json.loads(arg_dict)
+                for key, value in d.items():
+                    self.onecmd(f"update {class_name} {args} {key} {value}")
 
-        elif command == 'destroy':
-            self.onecmd(f'destroy {class_name} {id}')
+            except json.decoder.JSONDecodeError:
+                print(f"*** Invalid dict representation: {arg_dict}")
 
-        elif command == 'update':
-            pattern = r'\((.*?)\)'
-            match = re.search(pattern, arg)
-            if match:
-                in_para = match.group(1).split(', ')
-                id = in_para[0]
-                att_name = in_para[1]
-                value = in_para[2]
-                self.onecmd(f'update {class_name} {id} {att_name} {value}')
         else:
-            print(f"*** Unknown syntax: {arg}")
+            self.onecmd(f"{cmd_name} {class_name} {args}")
 
     def do_EOF(self, arg):
-        '''Ctrl+Z to quit the program'''
+        """Ctrl+Z to quit the program."""
         print()
         return True
 
