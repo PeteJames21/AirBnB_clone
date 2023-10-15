@@ -6,7 +6,7 @@ import uuid
 
 
 class BaseModel:
-    '''Defines all common attributes/methods for other classes'''
+    '''Defines all common attributes for other classes'''
     def __init__(self, *args, **kwargs):
         '''
         This is the constructor of the base model
